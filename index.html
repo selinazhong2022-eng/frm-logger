@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FRM Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFF6EE;
+    --bg2: #FDEFFB;
+    --card: #FFFFFF;
+    --ink: #2B2140;
+    --ink-soft: #6B6280;
+    --part1: #6C5CE7;
+    --part1-soft: #E9E5FF;
+    --part2: #00B8A9;
+    --part2-soft: #D9F7F3;
+    --warm: #FF8C42;
+    --pink: #FF5FA2;
+    --success: #3DDC97;
+    --pending: #FFD166;
+    --line: #F0E6FF;
+    --shadow: 0 8px 24px rgba(108,92,231,0.10);
+    --radius: 20px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Nunito', sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 10% 0%, var(--bg2) 0%, transparent 45%),
+      radial-gradient(circle at 90% 10%, #E5F9F6 0%, transparent 40%),
+      var(--bg);
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+  h1, h2, h3, .display { font-family: 'Baloo 2', sans-serif; }
+  .mono { font-family: 'Space Mono', monospace; }
+
+  header.top {
+    padding: 28px 24px 12px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  header.top h1 {
+    font-size: 28px;
+    font-weight: 800;
+    margin: 0 0 4px;
+    color: var(--ink);
+  }
+  header.top p { margin: 0; color: var(--ink-soft); font-weight: 600; }
+
+  nav.tabs {
+    max-width: 1100px;
+    margin: 18px auto 0;
+    padding: 0 24px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  nav.tabs button {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background: #ffffffaa;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  nav.tabs button:hover { background: #fff; color: var(--ink); }
+  nav.tabs button.active {
+    background: var(--ink);
+    color: #fff;
+    box-shadow: var(--shadow);
+  }
+
+  main#app {
+    max-width: 1100px;
+    margin: 24px auto;
+    padding: 0 24px;
+  }
+
+  .grid { display: grid; gap: 18px; }
+  .grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 760px) { .grid.cols-2 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px;
+  }
+
+  /* Countdown cards */
+  .countdown-card {
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+  }
+  .countdown-card.p1 { background: linear-gradient(135deg, #6C5CE7, #8E7CFF); }
+  .countdown-card.p2 { background: linear-gradient(135deg, #00B8A9, #29D8C6); }
+  .countdown-card .eyebrow { font-weight: 700; opacity: .85; font-size: 13px; letter-spacing: .5px; text-transform: uppercase; }
+  .countdown-card .days { font-family: 'Baloo 2'; font-size: 56px; font-weight: 800; line-height: 1; margin: 6px 0; }
+  .countdown-card .date { font-weight: 600; opacity: .9; font-size: 14px; }
+  .countdown-card .blob {
+    position: absolute; right: -30px; top: -30px; width: 140px; height: 140px;
+    background: rgba(255,255,255,0.15); border-radius: 50%;
+  }
+
+  /* Progress ring */
+  .ring-wrap { display: flex; align-items: center; gap: 16px; }
+  .ring-label { font-weight: 700; }
+  .ring-label .pct { font-family: 'Baloo 2'; font-size: 24px; display: block; }
+
+  /* Stat pills */
+  .stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
+  .stat-pill {
+    background: var(--bg);
+    border-radius: 14px;
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--ink-soft);
+    flex: 1;
+    min-width: 130px;
+  }
+  .stat-pill b { display: block; font-family: 'Baloo 2'; font-size: 20px; color: var(--ink); }
+
+  /* Book cards */
+  .book-card { border: 2px solid var(--line); }
+  .book-card.part1 { border-color: var(--part1-soft); }
+  .book-card.part2 { border-color: var(--part2-soft); }
+  .book-head {
+    display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+    gap: 10px; flex-wrap: wrap;
+  }
+  .book-head .name-edit {
+    font-family: 'Baloo 2'; font-size: 18px; font-weight: 700; border: none; background: transparent;
+    color: var(--ink); width: 160px;
+  }
+  .book-head .name-edit:focus { outline: 2px solid var(--part1-soft); border-radius: 6px; }
+  .book-meta { font-size: 13px; color: var(--ink-soft); font-weight: 700; }
+  .book-progress-bar {
+    height: 10px; border-radius: 6px; background: var(--bg); overflow: hidden; margin-top: 10px;
+  }
+  .book-progress-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--warm), var(--pink)); }
+
+  .toggle-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;
+    background: var(--bg); color: var(--ink-soft); cursor: pointer; border: 2px solid transparent;
+    user-select: none;
+  }
+  .toggle-chip.on { background: var(--success); color: #fff; }
+  .toggle-chip.na { background: #eee; color: #bbb; text-decoration: line-through; cursor: default; }
+
+  .book-body { margin-top: 16px; display: none; }
+  .book-body.open { display: block; }
+  .reading-row {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+    gap: 8px; padding: 10px 0; border-top: 1px dashed var(--line);
+  }
+  .reading-row input.reading-name {
+    border: none; background: transparent; font-weight: 700; font-size: 14px; width: 150px; color: var(--ink);
+  }
+  .reading-row input.reading-name:focus { outline: 2px solid var(--part1-soft); border-radius: 6px; }
+  .chip-set { display: flex; gap: 6px; flex-wrap: wrap; }
+  .row-actions button {
+    border: none; background: transparent; color: var(--ink-soft); cursor: pointer; font-size: 16px;
+  }
+  .book-actions { margin-top: 12px; display: flex; gap: 10px; }
+  .btn {
+    font-family: 'Baloo 2'; font-weight: 700; border: none; border-radius: 12px;
+    padding: 8px 16px; cursor: pointer; font-size: 13px;
+  }
+  .btn.primary { background: var(--ink); color: #fff; }
+  .btn.soft { background: var(--bg); color: var(--ink); }
+  .btn.warm { background: var(--warm); color: #fff; }
+  .btn.ghost { background: transparent; color: var(--ink-soft); text-decoration: underline; }
+
+  .add-book-card {
+    display: flex; align-items: center; justify-content: center;
+    border: 2px dashed var(--line); color: var(--ink-soft); font-weight: 700; cursor: pointer;
+    min-height: 80px;
+  }
+  .add-book-card:hover { background: #fff; }
+
+  /* Practice exams */
+  .pe-card { border-left: 6px solid var(--warm); }
+  .pe-card.part2 { border-left-color: var(--part2); }
+  .pe-card.part1 { border-left-color: var(--part1); }
+  .pe-title { font-family: 'Baloo 2'; font-weight: 700; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .pe-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .pe-fields label { font-size: 12px; font-weight: 700; color: var(--ink-soft); display: block; margin-bottom: 4px; }
+  .pe-fields input, .pe-fields textarea {
+    width: 100%; border: 2px solid var(--line); border-radius: 10px; padding: 8px 10px; font-family: 'Nunito';
+    font-size: 13px; color: var(--ink);
+  }
+  .pe-fields textarea { grid-column: 1 / -1; min-height: 50px; resize: vertical; }
+
+  /* Calendar */
+  .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .cal-head h2 { margin: 0; font-size: 20px; }
+  .cal-nav button {
+    background: var(--bg); border: none; border-radius: 10px; padding: 6px 12px; cursor: pointer;
+    font-weight: 800; font-size: 14px; color: var(--ink);
+  }
+  .cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
+  }
+  .cal-dow { text-align: center; font-size: 11px; font-weight: 800; color: var(--ink-soft); padding-bottom: 4px; }
+  .cal-day {
+    aspect-ratio: 1; border-radius: 12px; background: var(--bg); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; cursor: pointer; position: relative; border: 2px solid transparent;
+  }
+  .cal-day.empty { background: transparent; cursor: default; }
+  .cal-day .num { font-weight: 700; font-size: 13px; }
+  .cal-day.has-activity { background: var(--part1-soft); border-color: var(--part1); }
+  .cal-day.today { box-shadow: 0 0 0 2px var(--warm); }
+  .cal-day .dot-count {
+    font-family: 'Space Mono'; font-size: 10px; color: var(--part1); font-weight: 700;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(43,33,64,0.35); display: none;
+    align-items: center; justify-content: center; z-index: 100; padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: 20px; padding: 24px; max-width: 420px; width: 100%;
+    max-height: 80vh; overflow-y: auto;
+  }
+  .modal h3 { margin-top: 0; }
+  .log-item { padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }
+  .log-item b { display: block; }
+  .modal-close { float: right; cursor: pointer; font-weight: 800; color: var(--ink-soft); }
+
+  .quick-log-form { display: grid; gap: 10px; margin-top: 10px; }
+  .quick-log-form select, .quick-log-form input, .quick-log-form textarea {
+    border: 2px solid var(--line); border-radius: 10px; padding: 8px 10px; font-family: 'Nunito'; font-size: 13px;
+  }
+
+  .empty-note { color: var(--ink-soft); font-weight: 600; font-size: 13px; padding: 20px; text-align: center; }
+
+  .top-actions { display: flex; gap: 10px; margin-top: 10px; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; font-size: 12px; color: var(--ink-soft); font-weight: 700; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>🎯 FRM Command Center</h1>
+  <p>Tracking Part I (Nov 15, 2026) and Part II (Nov 26, 2026)</p>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-view="dashboard" class="active">Dashboard</button>
+  <button data-view="part1">Part I Books</button>
+  <button data-view="part2">Part II Books</button>
+  <button data-view="exams">Practice Exams</button>
+  <button data-view="calendar">Calendar</button>
+</nav>
+
+<main id="app"></main>
+
+<div class="modal-overlay" id="dayModalOverlay">
+  <div class="modal">
+    <span class="modal-close" id="dayModalClose">✕</span>
+    <h3 id="dayModalTitle">Day</h3>
+    <div id="dayModalBody"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="quickLogOverlay">
+  <div class="modal">
+    <span class="modal-close" id="quickLogClose">✕</span>
+    <h3>Quick log</h3>
+    <div class="quick-log-form" id="quickLogForm"></div>
+  </div>
+</div>
+
+<script>
+/* ---------- Constants ---------- */
+const PART1_DATE = new Date('2026-11-15T00:00:00');
+const PART2_DATE = new Date('2026-11-26T00:00:00');
+const STAGE_DEFS = [
+  {key: 'learningClaude', label: 'Learning w/ Claude'},
+  {key: 'readingPractice', label: 'Reading Qs'},
+  {key: 'revisingWrong', label: 'Revising wrong'},
+  {key: 'formulae', label: 'Formulae'},
+  {key: 'others', label: 'Others'}
+];
+const STORAGE_KEY = 'frmTrackerState_v1';
+
+/* ---------- Utils ---------- */
+const uid = () => 'id-' + Math.random().toString(36).slice(2, 9);
+const todayISO = () => {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+};
+const daysBetween = (target) => {
+  const now = new Date();
+  const t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const t1 = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+  return Math.round((t1 - t0) / 86400000);
+};
+const fmtDate = (d) => d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+
+/* ---------- Data model ---------- */
+function makeReading(name) {
+  return {
+    id: uid(),
+    name,
+    noFormula: false,
+    stages: {learningClaude:false, readingPractice:false, revisingWrong:false, formulae:false, others:false}
+  };
+}
+function makeBook(name, part, count) {
+  return {
+    id: uid(), name, part, gd65:false, jc100:false,
+    readings: Array.from({length: count}, (_, i) => makeReading('Reading ' + (i+1)))
+  };
+}
+function makePE(part, idx) {
+  return {id: uid(), part, label: 'Practice Exam ' + idx, date:'', score:'', notes:'', done:false};
+}
+
+function defaultState() {
+  return {
+    books: [
+      makeBook('Book 1', 1, 16),
+      makeBook('Book 2', 1, 16),
+      makeBook('Book 3', 1, 15),
+      makeBook('Book 4', 1, 15),
+      makeBook('Book 5', 2, 0),
+      makeBook('Book 6', 2, 0),
+      makeBook('Book 7', 2, 0),
+      makeBook('Book 8', 2, 0),
+      makeBook('Book 9', 2, 0),
+      makeBook('Book 10', 2, 0),
+    ],
+    practiceExams: [
+      makePE(1,1), makePE(1,2), makePE(1,3),
+      makePE(2,1), makePE(2,2), makePE(2,3),
+    ],
+    log: {}
+  };
+}
+
+let state;
+try {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  state = raw ? JSON.parse(raw) : defaultState();
+} catch(e) { state = defaultState(); }
+
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) { console.error('Save failed', e); }
+}
+
+function addLog(dateStr, entry) {
+  if (!state.log[dateStr]) state.log[dateStr] = [];
+  state.log[dateStr].push({time: new Date().toISOString(), ...entry});
+}
+
+/* ---------- Progress math ---------- */
+function readingCompletion(r) {
+  const keys = STAGE_DEFS.map(s => s.key).filter(k => !(k === 'formulae' && r.noFormula));
+  if (keys.length === 0) return 1;
+  const done = keys.filter(k => r.stages[k]).length;
+  return done / keys.length;
+}
+function bookProgress(book) {
+  const readingSum = book.readings.reduce((a, r) => a + readingCompletion(r), 0);
+  const total = book.readings.length + 2;
+  const done = readingSum + (book.gd65 ? 1 : 0) + (book.jc100 ? 1 : 0);
+  return total === 0 ? 0 : done / total;
+}
+function examProgress(part) {
+  const books = state.books.filter(b => b.part === part);
+  const pes = state.practiceExams.filter(p => p.part === part);
+  let totalUnits = 0, doneUnits = 0;
+  books.forEach(b => {
+    const units = b.readings.length + 2;
+    totalUnits += units;
+    doneUnits += b.readings.reduce((a,r)=>a+readingCompletion(r),0) + (b.gd65?1:0) + (b.jc100?1:0);
+  });
+  totalUnits += pes.length;
+  doneUnits += pes.filter(p => p.done).length;
+  return totalUnits === 0 ? 0 : doneUnits / totalUnits;
+}
+function readingStats(part) {
+  const books = state.books.filter(b => b.part === part);
+  let total = 0, full = 0;
+  books.forEach(b => b.readings.forEach(r => {
+    total++;
+    if (readingCompletion(r) === 1) full++;
+  }));
+  return {total, full};
+}
+
+/* ---------- Rendering ---------- */
+const app = document.getElementById('app');
+let currentView = 'dashboard';
+let openBooks = {};
+
+function ring(pct, color, size=90) {
+  const r = (size/2) - 8;
+  const c = 2 * Math.PI * r;
+  const off = c * (1 - pct);
+  return `<svg width="${size}" height="${size}" style="transform:rotate(-90deg)">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" stroke="#F0E6FF" stroke-width="10" fill="none"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" stroke="${color}" stroke-width="10" fill="none"
+      stroke-dasharray="${c}" stroke-dashoffset="${off}" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function renderDashboard() {
+  const p1 = examProgress(1), p2 = examProgress(2);
+  const s1 = readingStats(1), s2 = readingStats(2);
+  const gd65Done1 = state.books.filter(b=>b.part===1 && b.gd65).length;
+  const gd65Total1 = state.books.filter(b=>b.part===1).length;
+  const pe1Done = state.practiceExams.filter(p=>p.part===1 && p.done).length;
+  const pe2Done = state.practiceExams.filter(p=>p.part===2 && p.done).length;
+
+  app.innerHTML = `
+    <div class="grid cols-2">
+      <div class="card countdown-card p1">
+        <div class="blob"></div>
+        <div class="eyebrow">Part I</div>
+        <div class="days">${daysBetween(PART1_DATE)}<span style="font-size:20px;"> days</span></div>
+        <div class="date">${fmtDate(PART1_DATE)}</div>
+      </div>
+      <div class="card countdown-card p2">
+        <div class="blob"></div>
+        <div class="eyebrow">Part II</div>
+        <div class="days">${daysBetween(PART2_DATE)}<span style="font-size:20px;"> days</span></div>
+        <div class="date">${fmtDate(PART2_DATE)}</div>
+      </div>
+    </div>
+
+    <div class="grid cols-2" style="margin-top:18px;">
+      <div class="card">
+        <div class="ring-wrap">
+          ${ring(p1, 'var(--part1)')}
+          <div class="ring-label">Part I overall
+            <span class="pct" style="color:var(--part1)">${Math.round(p1*100)}%</span>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-pill"><b>${s1.full}/${s1.total}</b>readings fully done</div>
+          <div class="stat-pill"><b>${gd65Done1}/${gd65Total1}</b>books GD65 done</div>
+          <div class="stat-pill"><b>${pe1Done}/3</b>practice exams done</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ring-wrap">
+          ${ring(p2, 'var(--part2)')}
+          <div class="ring-label">Part II overall
+            <span class="pct" style="color:var(--part2)">${Math.round(p2*100)}%</span>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-pill"><b>${s2.full}/${s2.total}</b>readings fully done</div>
+          <div class="stat-pill"><b>${state.books.filter(b=>b.part===2 && b.gd65).length}/${state.books.filter(b=>b.part===2).length}</b>books GD65 done</div>
+          <div class="stat-pill"><b>${pe2Done}/3</b>practice exams done</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px;">
+      <div class="top-actions">
+        <button class="btn primary" id="btnQuickLog">+ Quick log</button>
+        <button class="btn soft" id="btnExport">Export backup</button>
+        <button class="btn soft" id="btnImport">Import backup</button>
+        <input type="file" id="importFile" accept=".json" style="display:none;">
+      </div>
+    </div>
+  `;
+  document.getElementById('btnQuickLog').onclick = openQuickLog;
+  document.getElementById('btnExport').onclick = exportBackup;
+  document.getElementById('btnImport').onclick = () => document.getElementById('importFile').click();
+  document.getElementById('importFile').onchange = importBackup;
+}
+
+function renderBooks(part) {
+  const books = state.books.filter(b => b.part === part);
+  const color = part === 1 ? 'var(--part1)' : 'var(--part2)';
+  const rows = books.map(book => renderBookCard(book, color)).join('');
+  app.innerHTML = `
+    <div class="legend">
+      <span><i style="background:var(--success)"></i>Done</span>
+      <span><i style="background:var(--bg);border:1px solid #ddd"></i>Pending</span>
+      <span><i style="background:#eee"></i>N/A (no formula)</span>
+    </div>
+    <div class="grid" style="margin-top:14px;">
+      ${rows}
+      <div class="card add-book-card" id="addBookBtn">+ Add another book to Part ${part === 1 ? 'I' : 'II'}</div>
+    </div>
+  `;
+  document.getElementById('addBookBtn').onclick = () => {
+    const name = prompt('Book name?');
+    if (!name) return;
+    state.books.push(makeBook(name, part, 0));
+    save(); renderBooks(part);
+  };
+  books.forEach(book => attachBookHandlers(book, part));
+}
+
+function renderBookCard(book, color) {
+  const pct = bookProgress(book);
+  const isOpen = openBooks[book.id];
+  const readingsHtml = book.readings.map(r => renderReadingRow(book, r)).join('') ||
+    '<div class="empty-note">No readings yet — add one below.</div>';
+  return `
+    <div class="card book-card part${book.part}" data-book="${book.id}">
+      <div class="book-head" data-toggle="${book.id}">
+        <div>
+          <input class="name-edit" data-rename="${book.id}" value="${escapeHtml(book.name)}">
+          <div class="book-meta">${book.readings.length} readings &middot; ${Math.round(pct*100)}% complete</div>
+        </div>
+        <div class="chip-set">
+          <span class="toggle-chip ${book.gd65 ? 'on' : ''}" data-book-stage="${book.id}|gd65">GD65 ${book.gd65?'✓':''}</span>
+          <span class="toggle-chip ${book.jc100 ? 'on' : ''}" data-book-stage="${book.id}|jc100">JC100 ${book.jc100?'✓':''}</span>
+        </div>
+      </div>
+      <div class="book-progress-bar"><div class="book-progress-fill" style="width:${pct*100}%;background:${color === 'var(--part1)' ? 'linear-gradient(90deg,#6C5CE7,#A78BFA)' : 'linear-gradient(90deg,#00B8A9,#5EEAD4)'}"></div></div>
+      <div class="book-body ${isOpen ? 'open' : ''}" id="body-${book.id}">
+        ${readingsHtml}
+        <div class="book-actions">
+          <button class="btn soft" data-add-reading="${book.id}">+ Add reading</button>
+          <button class="btn ghost" data-remove-book="${book.id}">Remove book</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderReadingRow(book, r) {
+  const chips = STAGE_DEFS.map(s => {
+    if (s.key === 'formulae' && r.noFormula) {
+      return `<span class="toggle-chip na">${s.label}</span>`;
+    }
+    const on = r.stages[s.key];
+    return `<span class="toggle-chip ${on ? 'on' : ''}" data-stage="${book.id}|${r.id}|${s.key}">${s.label}${on?' ✓':''}</span>`;
+  }).join('');
+  return `
+    <div class="reading-row" data-reading="${r.id}">
+      <input class="reading-name" data-rename-reading="${book.id}|${r.id}" value="${escapeHtml(r.name)}">
+      <div class="chip-set">
+        ${chips}
+        <label style="font-size:11px;color:var(--ink-soft);font-weight:700;display:flex;align-items:center;gap:4px;">
+          <input type="checkbox" data-noformula="${book.id}|${r.id}" ${r.noFormula ? 'checked' : ''}> no formula
+        </label>
+      </div>
+      <div class="row-actions">
+        <button data-remove-reading="${book.id}|${r.id}" title="Remove reading">🗑️</button>
+      </div>
+    </div>
+  `;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function attachBookHandlers(book, part) {
+  const head = document.querySelector(`[data-toggle="${book.id}"]`);
+  if (head) head.addEventListener('click', (e) => {
+    if (e.target.closest('.name-edit') || e.target.closest('.chip-set')) return;
+    openBooks[book.id] = !openBooks[book.id];
+    renderBooks(part);
+  });
+
+  const renameInput = document.querySelector(`[data-rename="${book.id}"]`);
+  if (renameInput) {
+    renameInput.addEventListener('click', e => e.stopPropagation());
+    renameInput.addEventListener('change', e => {
+      book.name = e.target.value; save();
+    });
+  }
+
+  document.querySelectorAll(`[data-book-stage^="${book.id}|"]`).forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      const [, key] = el.dataset.bookStage.split('|');
+      book[key] = !book[key];
+      if (book[key]) addLog(todayISO(), {type:'book', label: key.toUpperCase(), bookName: book.name, part: book.part});
+      save(); renderBooks(part);
+    });
+  });
+
+  document.querySelectorAll(`[data-stage^="${book.id}|"]`).forEach(el => {
+    el.addEventListener('click', () => {
+      const [, readingId, key] = el.dataset.stage.split('|');
+      const r = book.readings.find(x => x.id === readingId);
+      r.stages[key] = !r.stages[key];
+      if (r.stages[key]) {
+        const label = STAGE_DEFS.find(s => s.key === key).label;
+        addLog(todayISO(), {type:'reading', label, bookName: book.name, readingName: r.name, part: book.part});
+      }
+      save(); renderBooks(part);
+    });
+  });
+
+  document.querySelectorAll(`[data-noformula^="${book.id}|"]`).forEach(el => {
+    el.addEventListener('change', () => {
+      const [, readingId] = el.dataset.noformula.split('|');
+      const r = book.readings.find(x => x.id === readingId);
+      r.noFormula = el.checked;
+      save(); renderBooks(part);
+    });
+  });
+
+  document.querySelectorAll(`[data-rename-reading^="${book.id}|"]`).forEach(el => {
+    el.addEventListener('change', () => {
+      const [, readingId] = el.dataset.renameReading.split('|');
+      const r = book.readings.find(x => x.id === readingId);
+      r.name = el.value; save();
+    });
+  });
+
+  document.querySelectorAll(`[data-remove-reading^="${book.id}|"]`).forEach(el => {
+    el.addEventListener('click', () => {
+      const [, readingId] = el.dataset.removeReading.split('|');
+      book.readings = book.readings.filter(x => x.id !== readingId);
+      save(); renderBooks(part);
+    });
+  });
+
+  const addBtn = document.querySelector(`[data-add-reading="${book.id}"]`);
+  if (addBtn) addBtn.addEventListener('click', () => {
+    book.readings.push(makeReading('Reading ' + (book.readings.length + 1)));
+    save(); renderBooks(part);
+  });
+
+  const removeBtn = document.querySelector(`[data-remove-book="${book.id}"]`);
+  if (removeBtn) removeBtn.addEventListener('click', () => {
+    if (!confirm(`Remove "${book.name}" and all its readings?`)) return;
+    state.books = state.books.filter(b => b.id !== book.id);
+    save(); renderBooks(part);
+  });
+}
+
+function renderExams() {
+  const cardsHtml = (part) => state.practiceExams.filter(p => p.part === part).map(pe => `
+    <div class="card pe-card part${part}" data-pe="${pe.id}">
+      <div class="pe-title">
+        ${pe.label}
+        <label style="font-size:12px;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" data-pe-done="${pe.id}" ${pe.done ? 'checked' : ''}> Done
+        </label>
+      </div>
+      <div class="pe-fields">
+        <div><label>Date taken</label><input type="date" data-pe-date="${pe.id}" value="${pe.date}"></div>
+        <div><label>Score</label><input type="text" placeholder="e.g. 78%" data-pe-score="${pe.id}" value="${escapeHtml(pe.score)}"></div>
+        <div><label>Notes</label><textarea data-pe-notes="${pe.id}" placeholder="Weak areas, timing, takeaways...">${escapeHtml(pe.notes)}</textarea></div>
+      </div>
+    </div>
+  `).join('');
+
+  app.innerHTML = `
+    <h2 style="color:var(--part1)">Part I Practice Exams</h2>
+    <div class="grid cols-2">${cardsHtml(1)}</div>
+    <h2 style="color:var(--part2);margin-top:24px;">Part II Practice Exams</h2>
+    <div class="grid cols-2">${cardsHtml(2)}</div>
+  `;
+
+  state.practiceExams.forEach(pe => {
+    document.querySelector(`[data-pe-done="${pe.id}"]`).addEventListener('change', e => {
+      pe.done = e.target.checked;
+      if (pe.done) addLog(todayISO(), {type:'exam', label: pe.label, part: pe.part});
+      save(); renderExams();
+    });
+    document.querySelector(`[data-pe-date="${pe.id}"]`).addEventListener('change', e => { pe.date = e.target.value; save(); });
+    document.querySelector(`[data-pe-score="${pe.id}"]`).addEventListener('change', e => { pe.score = e.target.value; save(); });
+    document.querySelector(`[data-pe-notes="${pe.id}"]`).addEventListener('change', e => { pe.notes = e.target.value; save(); });
+  });
+}
+
+/* ---------- Calendar ---------- */
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+
+function renderCalendar() {
+  const first = new Date(calYear, calMonth, 1);
+  const startDow = first.getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const monthName = first.toLocaleDateString('en-US', {month:'long', year:'numeric'});
+  const dows = ['S','M','T','W','T','F','S'];
+
+  let cells = '';
+  for (let i = 0; i < startDow; i++) cells += '<div class="cal-day empty"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const iso = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const entries = state.log[iso] || [];
+    const isToday = iso === todayISO();
+    cells += `
+      <div class="cal-day ${entries.length ? 'has-activity' : ''} ${isToday ? 'today' : ''}" data-day="${iso}">
+        <div class="num">${d}</div>
+        ${entries.length ? `<div class="dot-count">${entries.length}</div>` : ''}
+      </div>
+    `;
+  }
+
+  app.innerHTML = `
+    <div class="card">
+      <div class="cal-head">
+        <h2>${monthName}</h2>
+        <div class="cal-nav">
+          <button id="prevMonth">←</button>
+          <button id="nextMonth">→</button>
+          <button class="btn primary" id="btnQuickLog2" style="margin-left:10px;">+ Quick log</button>
+        </div>
+      </div>
+      <div class="cal-grid">
+        ${dows.map(d => `<div class="cal-dow">${d}</div>`).join('')}
+        ${cells}
+      </div>
+    </div>
+  `;
+  document.getElementById('prevMonth').onclick = () => { calMonth--; if (calMonth<0){calMonth=11;calYear--;} renderCalendar(); };
+  document.getElementById('nextMonth').onclick = () => { calMonth++; if (calMonth>11){calMonth=0;calYear++;} renderCalendar(); };
+  document.getElementById('btnQuickLog2').onclick = openQuickLog;
+  document.querySelectorAll('[data-day]').forEach(el => {
+    el.addEventListener('click', () => openDayModal(el.dataset.day));
+  });
+}
+
+function openDayModal(iso) {
+  const entries = state.log[iso] || [];
+  const d = new Date(iso + 'T00:00:00');
+  document.getElementById('dayModalTitle').textContent = d.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+  const body = document.getElementById('dayModalBody');
+  if (entries.length === 0) {
+    body.innerHTML = '<div class="empty-note">Nothing logged this day.</div>';
+  } else {
+    body.innerHTML = entries.map(e => `
+      <div class="log-item">
+        <b>${escapeHtml(e.label)}</b>
+        ${e.bookName ? escapeHtml(e.bookName) : ''}${e.readingName ? ' — ' + escapeHtml(e.readingName) : ''}
+        ${e.part ? ` <span style="color:${e.part===1?'var(--part1)':'var(--part2)'}">(Part ${e.part===1?'I':'II'})</span>` : ''}
+        ${e.note ? '<div style="color:var(--ink-soft);font-weight:400;">' + escapeHtml(e.note) + '</div>' : ''}
+      </div>
+    `).join('');
+  }
+  document.getElementById('dayModalOverlay').classList.add('open');
+}
+document.getElementById('dayModalClose').onclick = () => document.getElementById('dayModalOverlay').classList.remove('open');
+document.getElementById('dayModalOverlay').addEventListener('click', e => {
+  if (e.target.id === 'dayModalOverlay') e.currentTarget.classList.remove('open');
+});
+
+/* ---------- Quick log ---------- */
+function openQuickLog() {
+  const form = document.getElementById('quickLogForm');
+  const bookOptions = state.books.map(b => `<option value="${b.id}">${escapeHtml(b.name)} (Part ${b.part===1?'I':'II'})</option>`).join('');
+  form.innerHTML = `
+    <div>
+      <label style="font-size:12px;font-weight:700;color:var(--ink-soft);">Book</label>
+      <select id="qlBook">${bookOptions}</select>
+    </div>
+    <div>
+      <label style="font-size:12px;font-weight:700;color:var(--ink-soft);">Reading (optional)</label>
+      <select id="qlReading"><option value="">— book-level only —</option></select>
+    </div>
+    <div>
+      <label style="font-size:12px;font-weight:700;color:var(--ink-soft);">Stage</label>
+      <select id="qlStage">
+        ${STAGE_DEFS.map(s => `<option value="${s.key}">${s.label}</option>`).join('')}
+        <option value="gd65">GD65 (book-level)</option>
+        <option value="jc100">JC100 (book-level)</option>
+      </select>
+    </div>
+    <div>
+      <label style="font-size:12px;font-weight:700;color:var(--ink-soft);">Date</label>
+      <input type="date" id="qlDate" value="${todayISO()}">
+    </div>
+    <div>
+      <label style="font-size:12px;font-weight:700;color:var(--ink-soft);">Note (optional)</label>
+      <textarea id="qlNote" placeholder="Anything you want to remember..."></textarea>
+    </div>
+    <button class="btn primary" id="qlSubmit">Log it</button>
+  `;
+  const bookSel = document.getElementById('qlBook');
+  const readingSel = document.getElementById('qlReading');
+  function refreshReadings() {
+    const book = state.books.find(b => b.id === bookSel.value);
+    readingSel.innerHTML = '<option value="">— book-level only —</option>' +
+      (book ? book.readings.map(r => `<option value="${r.id}">${escapeHtml(r.name)}</option>`).join('') : '');
+  }
+  bookSel.onchange = refreshReadings;
+  refreshReadings();
+
+  document.getElementById('qlSubmit').onclick = () => {
+    const book = state.books.find(b => b.id === bookSel.value);
+    const readingId = readingSel.value;
+    const stageKey = document.getElementById('qlStage').value;
+    const date = document.getElementById('qlDate').value || todayISO();
+    const note = document.getElementById('qlNote').value;
+
+    if (stageKey === 'gd65' || stageKey === 'jc100') {
+      book[stageKey] = true;
+      addLog(date, {type:'book', label: stageKey.toUpperCase(), bookName: book.name, part: book.part, note});
+    } else if (readingId) {
+      const r = book.readings.find(x => x.id === readingId);
+      r.stages[stageKey] = true;
+      const label = STAGE_DEFS.find(s => s.key === stageKey).label;
+      addLog(date, {type:'reading', label, bookName: book.name, readingName: r.name, part: book.part, note});
+    } else {
+      const label = STAGE_DEFS.find(s => s.key === stageKey).label;
+      addLog(date, {type:'note', label, bookName: book.name, part: book.part, note});
+    }
+    save();
+    document.getElementById('quickLogOverlay').classList.remove('open');
+    render();
+  };
+}
+document.getElementById('quickLogClose').onclick = () => document.getElementById('quickLogOverlay').classList.remove('open');
+document.getElementById('quickLogOverlay').addEventListener('click', e => {
+  if (e.target.id === 'quickLogOverlay') e.currentTarget.classList.remove('open');
+});
+function openQuickLogModal() {
+  openQuickLog();
+  document.getElementById('quickLogOverlay').classList.add('open');
+}
+
+/* wire the two dashboard/calendar buttons to actually open the modal */
+const _origOpenQuickLog = openQuickLog;
+openQuickLog = function() {
+  _origOpenQuickLog();
+  document.getElementById('quickLogOverlay').classList.add('open');
+};
+
+/* ---------- Backup ---------- */
+function exportBackup() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'frm-tracker-backup-' + todayISO() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importBackup(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (!parsed.books || !parsed.practiceExams) throw new Error('Invalid file');
+      state = parsed;
+      save();
+      render();
+      alert('Backup imported successfully.');
+    } catch (err) {
+      alert('Could not import this file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ---------- Nav & main render ---------- */
+function render() {
+  if (currentView === 'dashboard') renderDashboard();
+  else if (currentView === 'part1') renderBooks(1);
+  else if (currentView === 'part2') renderBooks(2);
+  else if (currentView === 'exams') renderExams();
+  else if (currentView === 'calendar') renderCalendar();
+}
+
+document.getElementById('tabs').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-view]');
+  if (!btn) return;
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentView = btn.dataset.view;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
