@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FRM Command Center</title>
+<link rel="icon" type="image/png" sizes="32x32" href="./icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="./icon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -135,7 +138,6 @@
   /* Book cards */
   .book-card { border: 2px solid var(--line); }
   .book-card.part1 { border-color: var(--part1-soft); }
-  .book-card.part2 { border-color: var(--part2-soft); }
   .book-head {
     display: flex; justify-content: space-between; align-items: center; cursor: pointer;
     gap: 10px; flex-wrap: wrap;
@@ -146,10 +148,6 @@
   }
   .book-head .name-edit:focus { outline: 2px solid var(--part1-soft); border-radius: 6px; }
   .book-meta { font-size: 13px; color: var(--ink-soft); font-weight: 700; }
-  .book-progress-bar {
-    height: 10px; border-radius: 6px; background: var(--bg); overflow: hidden; margin-top: 10px;
-  }
-  .book-progress-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--warm), var(--pink)); }
 
   .toggle-chip {
     display: inline-flex; align-items: center; gap: 6px;
@@ -193,7 +191,6 @@
 
   /* Practice exams */
   .pe-card { border-left: 6px solid var(--warm); }
-  .pe-card.part2 { border-left-color: var(--part2); }
   .pe-card.part1 { border-left-color: var(--part1); }
   .pe-title { font-family: 'Baloo 2'; font-weight: 700; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
   .pe-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
@@ -253,20 +250,82 @@
   .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; font-size: 12px; color: var(--ink-soft); font-weight: 700; }
   .legend span { display: inline-flex; align-items: center; gap: 5px; }
   .legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+  /* Level-up: XP bars */
+  .level-chip {
+    display: inline-flex; align-items: center; gap: 3px;
+    background: var(--ink); color: #fff; font-family: 'Baloo 2'; font-size: 11px; font-weight: 800;
+    padding: 2px 9px; border-radius: 8px; margin-left: 8px; vertical-align: middle;
+  }
+  .level-chip.max { background: linear-gradient(135deg, var(--warm), var(--pink)); }
+  .book-progress-bar {
+    height: 14px; border-radius: 8px; background: var(--bg); overflow: hidden; margin-top: 10px;
+    border: 2px solid var(--line); position: relative;
+  }
+  .book-progress-fill {
+    height: 100%; border-radius: 6px; position: relative; overflow: hidden;
+    transition: width .5s cubic-bezier(.34,1.56,.64,1);
+  }
+  .book-progress-fill::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.55) 45%, transparent 60%);
+    animation: shimmer 2.4s infinite;
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-120%); }
+    100% { transform: translateX(120%); }
+  }
+
+  /* Level-up: badge shelf */
+  .badge-shelf { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 16px; }
+  .badge { width: 68px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; }
+  .badge .icon {
+    width: 48px; height: 48px; border-radius: 50%; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+    filter: grayscale(1); opacity: .35; transition: all .2s ease;
+  }
+  .badge.unlocked .icon {
+    background: linear-gradient(135deg, var(--warm), var(--pink));
+    filter: none; opacity: 1;
+    box-shadow: 0 4px 14px rgba(255,95,162,.35);
+  }
+  .badge span.badge-label { font-size: 10px; font-weight: 800; color: var(--ink-soft); line-height: 1.2; }
+  .badge.unlocked span.badge-label { color: var(--ink); }
+
+  .stat-pill.glow { box-shadow: 0 0 0 2px var(--warm), 0 4px 14px rgba(255,140,66,.35); }
+
+  /* Confetti */
+  .confetti-piece {
+    position: fixed; top: -12px; width: 9px; height: 9px; border-radius: 2px;
+    pointer-events: none; z-index: 999; animation: confetti-fall 1.6s ease-in forwards;
+  }
+  @keyframes confetti-fall {
+    to { transform: translateY(105vh) rotate(760deg); opacity: 0; }
+  }
+
+  /* Calendar exam-day highlight */
+  .cal-day.exam-day {
+    background: linear-gradient(135deg, var(--warm), var(--pink));
+    border-color: var(--warm);
+    box-shadow: 0 0 0 3px rgba(255,140,66,.3);
+  }
+  .cal-day.exam-day .num { color: #fff; }
+  .cal-day .exam-tag {
+    font-family: 'Baloo 2'; font-size: 8px; font-weight: 800; color: #fff; letter-spacing: .4px;
+  }
 </style>
 </head>
 <body>
 
 <header class="top">
   <h1>🎯 FRM Command Center</h1>
-  <p>Tracking Part I (Nov 15, 2026) and Part II (Nov 26, 2026)</p>
+  <p>Tracking Part I (Nov 15, 2026)</p>
 </header>
 
 <nav class="tabs" id="tabs">
   <button data-view="dashboard" class="active">Dashboard</button>
-  <button data-view="part1">Part I Books</button>
-  <button data-view="part2">Part II Books</button>
-  <button data-view="exams">Practice Exams</button>
+  <button data-view="part1">Books</button>
+  <button data-view="milestones">GD65 / JC100 / Exams</button>
   <button data-view="calendar">Calendar</button>
 </nav>
 
@@ -291,7 +350,6 @@
 <script>
 /* ---------- Constants ---------- */
 const PART1_DATE = new Date('2026-11-15T00:00:00');
-const PART2_DATE = new Date('2026-11-26T00:00:00');
 const STAGE_DEFS = [
   {key: 'learningClaude', label: 'Learning w/ Claude'},
   {key: 'readingPractice', label: 'Reading Qs'},
@@ -299,14 +357,12 @@ const STAGE_DEFS = [
   {key: 'formulae', label: 'Formulae'},
   {key: 'others', label: 'Others'}
 ];
-const STORAGE_KEY = 'frmTrackerState_v1';
+const STORAGE_KEY = 'frmTrackerState_v3';
 
 /* ---------- Utils ---------- */
 const uid = () => 'id-' + Math.random().toString(36).slice(2, 9);
-const todayISO = () => {
-  const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-};
+const isoOf = (d) => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+const todayISO = () => isoOf(new Date());
 const daysBetween = (target) => {
   const now = new Date();
   const t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -324,36 +380,78 @@ function makeReading(name) {
     stages: {learningClaude:false, readingPractice:false, revisingWrong:false, formulae:false, others:false}
   };
 }
-function makeBook(name, part, count) {
+function makeBook(name, part, count, startNum=1) {
   return {
-    id: uid(), name, part, gd65:false, jc100:false,
-    readings: Array.from({length: count}, (_, i) => makeReading('Reading ' + (i+1)))
+    id: uid(), name, part, gd65:false, gd65Date:'', gd65Notes:'', jc100:false, jc100Date:'', jc100Notes:'',
+    readings: Array.from({length: count}, (_, i) => makeReading('Reading ' + (startNum + i)))
   };
 }
 function makePE(part, idx) {
   return {id: uid(), part, label: 'Practice Exam ' + idx, date:'', score:'', notes:'', done:false};
 }
+function nextReadingNumber(book) {
+  const nums = book.readings.map(r => parseInt(r.name.replace(/\D/g,''), 10)).filter(n => !isNaN(n));
+  return nums.length ? Math.max(...nums) + 1 : 1;
+}
 
 function defaultState() {
-  return {
-    books: [
-      makeBook('Book 1', 1, 16),
-      makeBook('Book 2', 1, 16),
-      makeBook('Book 3', 1, 15),
-      makeBook('Book 4', 1, 15),
-      makeBook('Book 5', 2, 0),
-      makeBook('Book 6', 2, 0),
-      makeBook('Book 7', 2, 0),
-      makeBook('Book 8', 2, 0),
-      makeBook('Book 9', 2, 0),
-      makeBook('Book 10', 2, 0),
-    ],
-    practiceExams: [
-      makePE(1,1), makePE(1,2), makePE(1,3),
-      makePE(2,1), makePE(2,2), makePE(2,3),
-    ],
+  // Books 1-4 = Part I, 62 readings total, numbered continuously across books
+  const b1 = makeBook('Book 1', 1, 11, 1);   // Readings 1-11
+  const b2 = makeBook('Book 2', 1, 15, 12);  // Readings 12-26
+  const b3 = makeBook('Book 3', 1, 20, 27);  // Readings 27-46
+  const b4 = makeBook('Book 4', 1, 16, 47);  // Readings 47-62
+
+  const st = {
+    books: [b1, b2, b3, b4],
+    practiceExams: [makePE(1,1), makePE(1,2), makePE(1,3)],
     log: {}
   };
+
+  const markRange = (book, from, to) => {
+    book.readings.forEach(r => {
+      const num = parseInt(r.name.replace(/\D/g,''), 10);
+      if (num >= from && num <= to) r.stages.learningClaude = true;
+    });
+  };
+  const seedLog = (date, entry) => {
+    if (!st.log[date]) st.log[date] = [];
+    st.log[date].push({time: new Date(date + 'T12:00:00').toISOString(), ...entry});
+  };
+
+  // --- Backfilled history from mistake/progress notebook ---
+  // Book 1
+  markRange(b1, 1, 3);  seedLog('2026-06-10', {type:'reading', label:'Learning w/ Claude', bookName:b1.name, readingName:'Readings 1-3', part:1});
+  markRange(b1, 4, 6);  seedLog('2026-06-11', {type:'reading', label:'Learning w/ Claude', bookName:b1.name, readingName:'Readings 4-6', part:1});
+  markRange(b1, 7, 9);  seedLog('2026-06-15', {type:'reading', label:'Learning w/ Claude', bookName:b1.name, readingName:'Readings 7-9', part:1});
+  markRange(b1, 10, 11); seedLog('2026-06-15', {type:'reading', label:'Learning w/ Claude', bookName:b1.name, readingName:'Readings 10-11', part:1});
+  b1.gd65 = true;
+  b1.gd65Date = '2026-06-15';
+  b1.gd65Notes = '64 Qs, bug fixes on Q21/28/33/35, Q44-64 rebuilt verbatim';
+  seedLog('2026-06-15', {type:'book', label:'GD65', bookName:b1.name, part:1, note:'64 Qs, bug fixes on Q21/28/33/35, Q44-64 rebuilt verbatim'});
+  seedLog('2026-06-16', {type:'note', label:'Notion cheatsheet compiled', bookName:b1.name, part:1});
+
+  // Book 2
+  markRange(b2, 12, 14); seedLog('2026-06-16', {type:'reading', label:'Learning w/ Claude', bookName:b2.name, readingName:'R12-14', part:1});
+  markRange(b2, 15, 17); seedLog('2026-06-23', {type:'reading', label:'Learning w/ Claude', bookName:b2.name, readingName:'R15-17', part:1});
+  markRange(b2, 18, 20); seedLog('2026-06-23', {type:'reading', label:'Learning w/ Claude', bookName:b2.name, readingName:'R18-20', part:1});
+  markRange(b2, 21, 23); seedLog('2026-06-24', {type:'reading', label:'Learning w/ Claude', bookName:b2.name, readingName:'R21-23', part:1});
+  markRange(b2, 24, 26); seedLog('2026-06-25', {type:'reading', label:'Learning w/ Claude', bookName:b2.name, readingName:'R24-26', part:1});
+  b2.gd65 = true;
+  b2.gd65Date = '2026-06-29';
+  b2.gd65Notes = '21 questions, all reviewed + Notion notes updated';
+  seedLog('2026-06-29', {type:'book', label:'GD65', bookName:b2.name, part:1, note:'21 questions, all reviewed + Notion notes updated'});
+
+  // Book 3
+  markRange(b3, 27, 29); seedLog('2026-07-02', {type:'reading', label:'Learning w/ Claude', bookName:b3.name, readingName:'R27-29', part:1});
+  markRange(b3, 30, 32); seedLog('2026-07-06', {type:'reading', label:'Learning w/ Claude', bookName:b3.name, readingName:'R30-32', part:1});
+  markRange(b3, 33, 35); seedLog('2026-07-08', {type:'reading', label:'Learning w/ Claude', bookName:b3.name, readingName:'R33-35', part:1});
+  markRange(b3, 36, 38); seedLog('2026-07-09', {type:'reading', label:'Learning w/ Claude', bookName:b3.name, readingName:'R36-38', part:1});
+  markRange(b3, 39, 41); seedLog('2026-07-12', {type:'reading', label:'Learning w/ Claude', bookName:b3.name, readingName:'R39-41', part:1});
+  markRange(b3, 42, 44); seedLog('2026-07-15', {type:'reading', label:'Learning w/ Claude', bookName:b3.name, readingName:'R42-44', part:1});
+  markRange(b3, 46, 46); seedLog('2026-07-17', {type:'reading', label:'Learning w/ Claude', bookName:b3.name, readingName:'R46', part:1});
+  // Note: R45 intentionally left unmarked — it didn't appear in the source milestone log.
+
+  return st;
 }
 
 let state;
@@ -406,6 +504,66 @@ function readingStats(part) {
   }));
   return {total, full};
 }
+function currentStreak() {
+  let d = new Date();
+  let iso = isoOf(d);
+  if (!(state.log[iso] && state.log[iso].length)) d.setDate(d.getDate() - 1);
+  let streak = 0;
+  while (true) {
+    iso = isoOf(d);
+    if (state.log[iso] && state.log[iso].length) { streak++; d.setDate(d.getDate() - 1); }
+    else break;
+  }
+  return streak;
+}
+function streakEmoji(n) {
+  if (n === 0) return '💤';
+  if (n < 3) return '🔥';
+  if (n < 7) return '🔥🔥';
+  return '🔥🔥🔥';
+}
+function bookLevel(pct) {
+  if (pct >= 1) return 5;
+  if (pct >= 0.75) return 4;
+  if (pct >= 0.5) return 3;
+  if (pct >= 0.25) return 2;
+  return 1;
+}
+
+/* ---------- Level-up: badges & confetti ---------- */
+const BADGE_DEFS = [
+  {id:'first_reading', icon:'📖', label:'First Reading', check: () => state.books.some(b => b.readings.some(r => readingCompletion(r) === 1))},
+  {id:'book_done', icon:'📗', label:'Book Complete', check: () => state.books.some(b => bookProgress(b) === 1)},
+  {id:'gd65_done', icon:'🎯', label:'GD65 Cleared', check: () => state.books.some(b => b.gd65)},
+  {id:'jc100_done', icon:'💯', label:'JC100 Cleared', check: () => state.books.some(b => b.jc100)},
+  {id:'pe_done', icon:'📝', label:'Practice Exam', check: () => state.practiceExams.some(p => p.done)},
+  {id:'streak3', icon:'🔥', label:'3-Day Streak', check: () => currentStreak() >= 3},
+  {id:'streak7', icon:'🔥🔥', label:'7-Day Streak', check: () => currentStreak() >= 7},
+  {id:'halfway', icon:'🏅', label:'Halfway Hero', check: () => examProgress(1) >= 0.5},
+  {id:'all_master', icon:'👑', label:'Books Mastered', check: () => state.books.every(b => b.gd65 && b.jc100)},
+];
+function renderBadgeShelf() {
+  return `<div class="badge-shelf">${BADGE_DEFS.map(b => {
+    const unlocked = b.check();
+    return `<div class="badge ${unlocked ? 'unlocked' : ''}" title="${escapeHtml(b.label)}">
+      <div class="icon">${b.icon}</div>
+      <span class="badge-label">${escapeHtml(b.label)}</span>
+    </div>`;
+  }).join('')}</div>`;
+}
+function spawnConfetti() {
+  const colors = ['#6C5CE7','#00B8A9','#FF8C42','#FF5FA2','#FFD166','#3DDC97'];
+  for (let i = 0; i < 30; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = (Math.random() * 100) + 'vw';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.animationDelay = (Math.random() * 0.25) + 's';
+    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2000);
+  }
+}
 
 /* ---------- Rendering ---------- */
 const app = document.getElementById('app');
@@ -424,56 +582,40 @@ function ring(pct, color, size=90) {
 }
 
 function renderDashboard() {
-  const p1 = examProgress(1), p2 = examProgress(2);
-  const s1 = readingStats(1), s2 = readingStats(2);
+  const p1 = examProgress(1);
+  const s1 = readingStats(1);
   const gd65Done1 = state.books.filter(b=>b.part===1 && b.gd65).length;
   const gd65Total1 = state.books.filter(b=>b.part===1).length;
   const pe1Done = state.practiceExams.filter(p=>p.part===1 && p.done).length;
-  const pe2Done = state.practiceExams.filter(p=>p.part===2 && p.done).length;
+  const daysLeft = daysBetween(PART1_DATE);
+  const readingsLeft = s1.total - s1.full;
+  const weeksLeft = daysLeft / 7;
+  const paceNeeded = weeksLeft > 0 ? Math.max(0, Math.ceil(readingsLeft / weeksLeft)) : readingsLeft;
+  const streak = currentStreak();
 
   app.innerHTML = `
-    <div class="grid cols-2">
-      <div class="card countdown-card p1">
-        <div class="blob"></div>
-        <div class="eyebrow">Part I</div>
-        <div class="days">${daysBetween(PART1_DATE)}<span style="font-size:20px;"> days</span></div>
-        <div class="date">${fmtDate(PART1_DATE)}</div>
-      </div>
-      <div class="card countdown-card p2">
-        <div class="blob"></div>
-        <div class="eyebrow">Part II</div>
-        <div class="days">${daysBetween(PART2_DATE)}<span style="font-size:20px;"> days</span></div>
-        <div class="date">${fmtDate(PART2_DATE)}</div>
-      </div>
+    <div class="card countdown-card p1">
+      <div class="blob"></div>
+      <div class="eyebrow">Part I</div>
+      <div class="days">${daysLeft}<span style="font-size:20px;"> days</span></div>
+      <div class="date">${fmtDate(PART1_DATE)}</div>
     </div>
 
-    <div class="grid cols-2" style="margin-top:18px;">
-      <div class="card">
-        <div class="ring-wrap">
-          ${ring(p1, 'var(--part1)')}
-          <div class="ring-label">Part I overall
-            <span class="pct" style="color:var(--part1)">${Math.round(p1*100)}%</span>
-          </div>
-        </div>
-        <div class="stat-row">
-          <div class="stat-pill"><b>${s1.full}/${s1.total}</b>readings fully done</div>
-          <div class="stat-pill"><b>${gd65Done1}/${gd65Total1}</b>books GD65 done</div>
-          <div class="stat-pill"><b>${pe1Done}/3</b>practice exams done</div>
+    <div class="card" style="margin-top:18px;">
+      <div class="ring-wrap">
+        ${ring(p1, 'var(--part1)')}
+        <div class="ring-label">Overall progress
+          <span class="pct" style="color:var(--part1)">${Math.round(p1*100)}%</span>
         </div>
       </div>
-      <div class="card">
-        <div class="ring-wrap">
-          ${ring(p2, 'var(--part2)')}
-          <div class="ring-label">Part II overall
-            <span class="pct" style="color:var(--part2)">${Math.round(p2*100)}%</span>
-          </div>
-        </div>
-        <div class="stat-row">
-          <div class="stat-pill"><b>${s2.full}/${s2.total}</b>readings fully done</div>
-          <div class="stat-pill"><b>${state.books.filter(b=>b.part===2 && b.gd65).length}/${state.books.filter(b=>b.part===2).length}</b>books GD65 done</div>
-          <div class="stat-pill"><b>${pe2Done}/3</b>practice exams done</div>
-        </div>
+      <div class="stat-row">
+        <div class="stat-pill"><b>${s1.full}/${s1.total}</b>readings fully done</div>
+        <div class="stat-pill"><b>${gd65Done1}/${gd65Total1}</b>books GD65 done</div>
+        <div class="stat-pill"><b>${pe1Done}/3</b>practice exams done</div>
+        <div class="stat-pill"><b>${paceNeeded}/wk</b>readings needed to stay on track</div>
+        <div class="stat-pill ${streak>=7?'glow':''}"><b>${streakEmoji(streak)} ${streak}</b>day streak</div>
       </div>
+      ${renderBadgeShelf()}
     </div>
 
     <div class="card" style="margin-top:18px;">
@@ -525,6 +667,7 @@ function renderBookCard(book, color) {
       <div class="book-head" data-toggle="${book.id}">
         <div>
           <input class="name-edit" data-rename="${book.id}" value="${escapeHtml(book.name)}">
+          <span class="level-chip ${pct >= 1 ? 'max' : ''}">LV.${bookLevel(pct)}</span>
           <div class="book-meta">${book.readings.length} readings &middot; ${Math.round(pct*100)}% complete</div>
         </div>
         <div class="chip-set">
@@ -592,8 +735,13 @@ function attachBookHandlers(book, part) {
     el.addEventListener('click', e => {
       e.stopPropagation();
       const [, key] = el.dataset.bookStage.split('|');
+      const wasOn = book[key];
       book[key] = !book[key];
-      if (book[key]) addLog(todayISO(), {type:'book', label: key.toUpperCase(), bookName: book.name, part: book.part});
+      if (book[key] && !wasOn) {
+        if (!book[key + 'Date']) book[key + 'Date'] = todayISO();
+        addLog(todayISO(), {type:'book', label: key.toUpperCase(), bookName: book.name, part: book.part});
+        spawnConfetti();
+      }
       save(); renderBooks(part);
     });
   });
@@ -602,11 +750,14 @@ function attachBookHandlers(book, part) {
     el.addEventListener('click', () => {
       const [, readingId, key] = el.dataset.stage.split('|');
       const r = book.readings.find(x => x.id === readingId);
+      const beforePct = bookProgress(book);
       r.stages[key] = !r.stages[key];
       if (r.stages[key]) {
         const label = STAGE_DEFS.find(s => s.key === key).label;
         addLog(todayISO(), {type:'reading', label, bookName: book.name, readingName: r.name, part: book.part});
       }
+      const afterPct = bookProgress(book);
+      if (beforePct < 1 && afterPct === 1) spawnConfetti();
       save(); renderBooks(part);
     });
   });
@@ -638,7 +789,7 @@ function attachBookHandlers(book, part) {
 
   const addBtn = document.querySelector(`[data-add-reading="${book.id}"]`);
   if (addBtn) addBtn.addEventListener('click', () => {
-    book.readings.push(makeReading('Reading ' + (book.readings.length + 1)));
+    book.readings.push(makeReading('Reading ' + nextReadingNumber(book)));
     save(); renderBooks(part);
   });
 
@@ -650,9 +801,30 @@ function attachBookHandlers(book, part) {
   });
 }
 
-function renderExams() {
-  const cardsHtml = (part) => state.practiceExams.filter(p => p.part === part).map(pe => `
-    <div class="card pe-card part${part}" data-pe="${pe.id}">
+function renderMilestoneSection(key) {
+  const title = key === 'gd65' ? 'GD65' : 'JC100';
+  const dateKey = key + 'Date';
+  const notesKey = key + 'Notes';
+  const books = state.books.filter(b => b.part === 1);
+  return books.map(book => `
+    <div class="card pe-card part1" data-mb="${book.id}|${key}">
+      <div class="pe-title">
+        ${escapeHtml(book.name)} — ${title}
+        <label style="font-size:12px;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" data-mb-done="${book.id}|${key}" ${book[key] ? 'checked' : ''}> Done
+        </label>
+      </div>
+      <div class="pe-fields">
+        <div><label>Date completed</label><input type="date" data-mb-date="${book.id}|${key}" value="${book[dateKey] || ''}"></div>
+        <div><label>Notes</label><textarea data-mb-notes="${book.id}|${key}" placeholder="Question counts, bug fixes, review notes...">${escapeHtml(book[notesKey] || '')}</textarea></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderPECards() {
+  return state.practiceExams.filter(p => p.part === 1).map(pe => `
+    <div class="card pe-card part1" data-pe="${pe.id}">
       <div class="pe-title">
         ${pe.label}
         <label style="font-size:12px;display:flex;align-items:center;gap:6px;">
@@ -666,19 +838,47 @@ function renderExams() {
       </div>
     </div>
   `).join('');
+}
 
+function renderMilestones() {
   app.innerHTML = `
-    <h2 style="color:var(--part1)">Part I Practice Exams</h2>
-    <div class="grid cols-2">${cardsHtml(1)}</div>
-    <h2 style="color:var(--part2);margin-top:24px;">Part II Practice Exams</h2>
-    <div class="grid cols-2">${cardsHtml(2)}</div>
+    <h2 style="color:var(--part1)">GD65</h2>
+    <div class="grid cols-2">${renderMilestoneSection('gd65')}</div>
+
+    <h2 style="color:var(--part1);margin-top:24px;">JC100</h2>
+    <div class="grid cols-2">${renderMilestoneSection('jc100')}</div>
+
+    <h2 style="color:var(--part1);margin-top:24px;">Practice Exams</h2>
+    <div class="grid cols-2">${renderPECards()}</div>
   `;
 
-  state.practiceExams.forEach(pe => {
+  // GD65 / JC100 handlers
+  ['gd65', 'jc100'].forEach(key => {
+    const dateKey = key + 'Date';
+    const notesKey = key + 'Notes';
+    state.books.filter(b => b.part === 1).forEach(book => {
+      const idAttr = `${book.id}|${key}`;
+      document.querySelector(`[data-mb-done="${idAttr}"]`).addEventListener('change', e => {
+        const wasOn = book[key];
+        book[key] = e.target.checked;
+        if (book[key] && !wasOn) {
+          if (!book[dateKey]) book[dateKey] = todayISO();
+          addLog(todayISO(), {type:'book', label: key === 'gd65' ? 'GD65' : 'JC100', bookName: book.name, part: book.part});
+          spawnConfetti();
+        }
+        save(); renderMilestones();
+      });
+      document.querySelector(`[data-mb-date="${idAttr}"]`).addEventListener('change', e => { book[dateKey] = e.target.value; save(); });
+      document.querySelector(`[data-mb-notes="${idAttr}"]`).addEventListener('change', e => { book[notesKey] = e.target.value; save(); });
+    });
+  });
+
+  // Practice exam handlers
+  state.practiceExams.filter(p => p.part === 1).forEach(pe => {
     document.querySelector(`[data-pe-done="${pe.id}"]`).addEventListener('change', e => {
       pe.done = e.target.checked;
-      if (pe.done) addLog(todayISO(), {type:'exam', label: pe.label, part: pe.part});
-      save(); renderExams();
+      if (pe.done) { addLog(todayISO(), {type:'exam', label: pe.label, part: pe.part}); spawnConfetti(); }
+      save(); renderMilestones();
     });
     document.querySelector(`[data-pe-date="${pe.id}"]`).addEventListener('change', e => { pe.date = e.target.value; save(); });
     document.querySelector(`[data-pe-score="${pe.id}"]`).addEventListener('change', e => { pe.score = e.target.value; save(); });
@@ -703,10 +903,11 @@ function renderCalendar() {
     const iso = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
     const entries = state.log[iso] || [];
     const isToday = iso === todayISO();
+    const isExamDay = iso === '2026-11-15';
     cells += `
-      <div class="cal-day ${entries.length ? 'has-activity' : ''} ${isToday ? 'today' : ''}" data-day="${iso}">
+      <div class="cal-day ${entries.length ? 'has-activity' : ''} ${isToday ? 'today' : ''} ${isExamDay ? 'exam-day' : ''}" data-day="${iso}">
         <div class="num">${d}</div>
-        ${entries.length ? `<div class="dot-count">${entries.length}</div>` : ''}
+        ${isExamDay ? '<div class="exam-tag">EXAM</div>' : (entries.length ? `<div class="dot-count">${entries.length}</div>` : '')}
       </div>
     `;
   }
@@ -718,6 +919,7 @@ function renderCalendar() {
         <div class="cal-nav">
           <button id="prevMonth">←</button>
           <button id="nextMonth">→</button>
+          <button class="btn soft" id="btnJumpExam">🎯 Exam month</button>
           <button class="btn primary" id="btnQuickLog2" style="margin-left:10px;">+ Quick log</button>
         </div>
       </div>
@@ -729,6 +931,7 @@ function renderCalendar() {
   `;
   document.getElementById('prevMonth').onclick = () => { calMonth--; if (calMonth<0){calMonth=11;calYear--;} renderCalendar(); };
   document.getElementById('nextMonth').onclick = () => { calMonth++; if (calMonth>11){calMonth=0;calYear++;} renderCalendar(); };
+  document.getElementById('btnJumpExam').onclick = () => { calYear = 2026; calMonth = 10; renderCalendar(); };
   document.getElementById('btnQuickLog2').onclick = openQuickLog;
   document.querySelectorAll('[data-day]').forEach(el => {
     el.addEventListener('click', () => openDayModal(el.dataset.day));
@@ -808,7 +1011,13 @@ function openQuickLog() {
     const note = document.getElementById('qlNote').value;
 
     if (stageKey === 'gd65' || stageKey === 'jc100') {
+      const wasOn = book[stageKey];
       book[stageKey] = true;
+      if (!wasOn) {
+        const dateKey = stageKey + 'Date';
+        if (!book[dateKey]) book[dateKey] = date;
+        spawnConfetti();
+      }
       addLog(date, {type:'book', label: stageKey.toUpperCase(), bookName: book.name, part: book.part, note});
     } else if (readingId) {
       const r = book.readings.find(x => x.id === readingId);
@@ -828,11 +1037,6 @@ document.getElementById('quickLogClose').onclick = () => document.getElementById
 document.getElementById('quickLogOverlay').addEventListener('click', e => {
   if (e.target.id === 'quickLogOverlay') e.currentTarget.classList.remove('open');
 });
-function openQuickLogModal() {
-  openQuickLog();
-  document.getElementById('quickLogOverlay').classList.add('open');
-}
-
 /* wire the two dashboard/calendar buttons to actually open the modal */
 const _origOpenQuickLog = openQuickLog;
 openQuickLog = function() {
@@ -872,8 +1076,7 @@ function importBackup(e) {
 function render() {
   if (currentView === 'dashboard') renderDashboard();
   else if (currentView === 'part1') renderBooks(1);
-  else if (currentView === 'part2') renderBooks(2);
-  else if (currentView === 'exams') renderExams();
+  else if (currentView === 'milestones') renderMilestones();
   else if (currentView === 'calendar') renderCalendar();
 }
 
